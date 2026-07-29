@@ -8,6 +8,7 @@
   },
   "scripts": {
     "scan": "tsx src/cli.ts",
+    "price-lookup": "tsx src/priceLookupCli.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

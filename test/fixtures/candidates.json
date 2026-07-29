@@ -1,0 +1,13 @@
+[
+  {
+    "id": 2001,
+    "title": "Barbour Puffer coat",
+    "brand": "Barbour",
+    "condition": "Very good",
+    "price": { "amount": 15, "currency": "GBP" },
+    "size": "M",
+    "sellerCountry": "GB",
+    "url": "https://www.vinted.co.uk/items/2001",
+    "photos": ["https://images1.vinted.net/2001-a.jpeg"]
+  }
+]

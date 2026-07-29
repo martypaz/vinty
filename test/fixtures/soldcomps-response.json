@@ -1,0 +1,34 @@
+{
+  "keyword": "Barbour coat",
+  "totalItems": 4,
+  "items": [
+    {
+      "itemId": "1",
+      "title": "Barbour Liddesdale coat",
+      "soldPrice": "70.00",
+      "soldCurrency": "GBP",
+      "url": "https://www.ebay.co.uk/itm/1"
+    },
+    {
+      "itemId": "2",
+      "title": "Barbour wax coat",
+      "soldPrice": "80.00",
+      "soldCurrency": "GBP",
+      "url": "https://www.ebay.co.uk/itm/2"
+    },
+    {
+      "itemId": "3",
+      "title": "Barbour quilted coat",
+      "soldPrice": "60.00",
+      "soldCurrency": "GBP",
+      "url": "https://www.ebay.co.uk/itm/3"
+    },
+    {
+      "itemId": "4",
+      "title": "Barbour classic coat",
+      "soldPrice": "90.00",
+      "soldCurrency": "GBP",
+      "url": "https://www.ebay.co.uk/itm/4"
+    }
+  ]
+}
