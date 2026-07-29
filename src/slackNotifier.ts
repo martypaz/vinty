@@ -1,5 +1,8 @@
 import { readFileSync } from "node:fs";
 
+import type Database from "better-sqlite3";
+
+import { openDb, upsertListing } from "./db.js";
 import type { EvaluatedCandidateItem, NotifiedCandidateItem, SlackNotificationResult } from "./types.js";
 
 export const DEFAULT_CHANNEL = "#approvals";
@@ -91,6 +94,7 @@ async function postSlackMessage(
 
 export async function notifyCandidates(
   candidates: EvaluatedCandidateItem[],
+  db: Database.Database,
   token: string | undefined = process.env.SLACK_BOT_TOKEN,
   channel: string = process.env.SLACK_CHANNEL ?? DEFAULT_CHANNEL
 ): Promise<NotifiedCandidateItem[]> {
@@ -106,11 +110,19 @@ export async function notifyCandidates(
       continue;
     }
 
-    const result = await postSlackMessage(token, channel, candidate);
+    const slackResult = await postSlackMessage(token, channel, candidate);
+
+    let dbError: string | null = null;
+    try {
+      upsertListing(db, candidate);
+    } catch (err) {
+      dbError = err instanceof Error ? err.message : "Unknown database error";
+    }
+
     const notification: SlackNotificationResult = {
       attempted: true,
-      success: result.ok,
-      error: result.ok ? null : (result.error ?? "Unknown Slack error"),
+      success: slackResult.ok && dbError === null,
+      error: !slackResult.ok ? (slackResult.error ?? "Unknown Slack error") : dbError,
     };
     results.push({ ...candidate, notification });
   }
@@ -139,11 +151,13 @@ function parseCandidates(raw: string): EvaluatedCandidateItem[] {
 }
 
 export async function main(): Promise<void> {
+  let db: Database.Database | undefined;
   try {
     const filePath = process.argv[2];
     const raw = filePath ? readFileSync(filePath, "utf-8") : await readStdin();
     const candidates = parseCandidates(raw);
-    const notified = await notifyCandidates(candidates);
+    db = openDb();
+    const notified = await notifyCandidates(candidates, db);
 
     process.stdout.write(`${JSON.stringify(notified, null, 2)}\n`);
 
@@ -166,5 +180,7 @@ export async function main(): Promise<void> {
           : "Unknown error while notifying Slack";
     process.stderr.write(`Error: ${message}\n`);
     process.exitCode = 1;
+  } finally {
+    db?.close();
   }
 }
