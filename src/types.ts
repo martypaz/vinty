@@ -80,3 +80,13 @@ export interface ProfitEvaluation {
 export interface EvaluatedCandidateItem extends EnrichedCandidateItem {
   profitEvaluation: ProfitEvaluation;
 }
+
+export interface SlackNotificationResult {
+  attempted: boolean;
+  success: boolean | null;
+  error: string | null;
+}
+
+export interface NotifiedCandidateItem extends EvaluatedCandidateItem {
+  notification: SlackNotificationResult;
+}

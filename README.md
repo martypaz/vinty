@@ -121,3 +121,55 @@ npm run evaluate enriched.json
   data yet, or either currency isn't `"GBP"`.
 
 This command only reads already-fetched data — no new network calls.
+
+## Slack #approvals notification (MAR-8)
+
+Reads the evaluate command's output and posts a Slack message for every
+candidate that meets the profit/margin threshold, so you can decide whether
+to go buy it on Vinted.
+
+```sh
+export SLACK_BOT_TOKEN=xoxb-your-token   # bot needs chat:write and to be
+                                          # invited into #approvals
+npm run scan | npm run price-lookup | npm run evaluate | npm run notify
+# or:
+npm run evaluate enriched.json > evaluated.json
+npm run notify evaluated.json
+```
+
+Each candidate gets a `notification` field:
+
+```json
+{ "attempted": true, "success": true, "error": null }
+```
+
+- Only candidates with `profitEvaluation.meetsThreshold: true` get posted;
+  others get `{ attempted: false, success: null, error: null }` — no Slack
+  call made for them.
+- The Slack message includes title (linked to the Vinted listing), brand,
+  condition, size, Vinted price, eBay median sold price, net profit, margin,
+  and the first photo.
+- Posts to `#approvals` by default; override with `SLACK_CHANNEL`.
+- If one post fails, the rest of the batch is still attempted — a one-line
+  stderr summary reports how many succeeded/failed, and the command exits
+  non-zero if anything failed.
+- **This is a one-way notification only** — there are no approve/reject
+  buttons in the message. For now, "approving" means going and buying the
+  item on Vinted yourself after seeing the ping; interactive
+  approve/reject-and-buy is a future issue, designed together with purchase
+  automation (it needs a public webhook endpoint to receive Slack's button
+  clicks, which this command doesn't have).
+- No deduplication: re-running the same input re-posts the same candidates.
+
+If `SLACK_BOT_TOKEN` is unset, or the input isn't valid JSON, the command
+prints a clean one-line error to stderr and exits non-zero before any API
+calls.
+
+## Automated checks & auto-merge
+
+Every push and PR runs `.github/workflows/ci.yml` (typecheck + test) via
+GitHub Actions. `main` requires this check to pass before anything merges.
+Finn-loop's reviewer (`finn-review`) auto-merges a PR only when its review
+is clean (no must-fix findings), the PR carries no pre-existing
+`needs-human-review` label, and this required check has actually passed —
+`finn-build` itself never merges its own work.
