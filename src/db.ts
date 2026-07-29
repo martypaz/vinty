@@ -9,6 +9,14 @@ const DEFAULT_DB_PATH = "data/vinty.sqlite3";
 
 export class ListingSaveError extends Error {}
 
+const ADDED_COLUMNS: Array<[string, string]> = [
+  ["ordered_at", "TEXT"],
+  ["listed_at", "TEXT"],
+  ["ebay_listing_title", "TEXT"],
+  ["ebay_listing_price", "REAL"],
+  ["ebay_listing_url", "TEXT"],
+];
+
 export function initSchema(db: Database.Database): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS listings (
@@ -34,6 +42,17 @@ export function initSchema(db: Database.Database): void {
       updated_at TEXT NOT NULL
     )
   `);
+
+  const existingColumns = new Set(
+    (db.prepare("PRAGMA table_info(listings)").all() as Array<{ name: string }>).map(
+      (column) => column.name
+    )
+  );
+  for (const [name, type] of ADDED_COLUMNS) {
+    if (!existingColumns.has(name)) {
+      db.exec(`ALTER TABLE listings ADD COLUMN ${name} ${type}`);
+    }
+  }
 }
 
 export function openDb(dbPath: string = process.env.VINTY_DB_PATH ?? DEFAULT_DB_PATH): Database.Database {

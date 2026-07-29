@@ -186,6 +186,32 @@ This is the foundation for a future backend API + React UI to manage
 listings across "new", "ordered/pending delivery", and "eBay listings"
 stages — not built yet.
 
+## Backend API server (MAR-10)
+
+```sh
+npm run api
+```
+
+Starts an Express server on `http://localhost:3001` (override with `PORT`),
+reading/writing the same `data/vinty.sqlite3` the pipeline uses. No auth —
+localhost only, matches every other command being a trusted local tool.
+CORS is enabled so a future React dev server (a different port) can call it.
+
+- `GET /api/listings` — optionally `?status=new|ordered|listed_on_ebay`.
+  Returns all listings (or just that status), newest-first, camelCase
+  fields matching the schema (`vintedPrice: {amount, currency}`,
+  `ebayListing: {title, price, url} | null`, etc.)
+- `PATCH /api/listings/:id/order` — marks a `"new"` listing `"ordered"`
+  and stamps `orderedAt`. `409` if it isn't currently `"new"`.
+- `PATCH /api/listings/:id/ebay-listing` — body `{ title, price, url }`;
+  marks an `"ordered"` listing `"listed_on_ebay"`, stamps `listedAt`, and
+  records what you typed in. `409` if it isn't currently `"ordered"`. `400`
+  if any field is missing or the wrong type. This only records what you
+  manually type — there's no real eBay API integration.
+- Both PATCH endpoints return `404` for an unknown listing id.
+
+This is a foundation for the future React UI — no frontend exists yet.
+
 ## Automated checks & auto-merge
 
 Every push and PR runs `.github/workflows/ci.yml` (typecheck + test) via
