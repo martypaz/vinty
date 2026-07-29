@@ -98,6 +98,22 @@ describe("notifyCandidates", () => {
     expect(result.notification).toEqual({ attempted: false, success: null, error: null });
   });
 
+  it("does not crash on a malformed candidate missing profitEvaluation", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const malformed = { ...makeEvaluatedCandidate() } as Record<string, unknown>;
+    delete malformed.profitEvaluation;
+
+    const [result] = await notifyCandidates(
+      [malformed as unknown as EvaluatedCandidateItem],
+      "xoxb-test-token"
+    );
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.notification).toEqual({ attempted: false, success: null, error: null });
+  });
+
   it("continues to later candidates after one Slack post fails (AC-5)", async () => {
     const fetchMock = vi
       .fn()

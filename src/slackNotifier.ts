@@ -100,7 +100,7 @@ export async function notifyCandidates(
 
   const results: NotifiedCandidateItem[] = [];
   for (const candidate of candidates) {
-    if (!candidate.profitEvaluation.meetsThreshold) {
+    if (!candidate.profitEvaluation?.meetsThreshold) {
       const notification: SlackNotificationResult = { attempted: false, success: null, error: null };
       results.push({ ...candidate, notification });
       continue;
