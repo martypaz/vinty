@@ -72,16 +72,21 @@ function estimateFromComps(response: SoldCompsResponse): EbayPriceEstimate {
     return {
       available: false,
       medianPrice: null,
+      medianShippingPrice: null,
       currency: null,
       comparableCount,
       reason: "insufficient_comps",
     };
   }
 
+  const shippingPrices = response.items
+    .map((item) => Number(item.shippingPrice))
+    .filter((price) => Number.isFinite(price));
   const currency = response.items.find((item) => item.soldCurrency)?.soldCurrency ?? null;
   return {
     available: true,
     medianPrice: median(prices),
+    medianShippingPrice: median(shippingPrices),
     currency,
     comparableCount,
     reason: null,
@@ -89,7 +94,14 @@ function estimateFromComps(response: SoldCompsResponse): EbayPriceEstimate {
 }
 
 function cappedEstimate(): EbayPriceEstimate {
-  return { available: false, medianPrice: null, currency: null, comparableCount: 0, reason: "capped" };
+  return {
+    available: false,
+    medianPrice: null,
+    medianShippingPrice: null,
+    currency: null,
+    comparableCount: 0,
+    reason: "capped",
+  };
 }
 
 export async function enrichCandidates(

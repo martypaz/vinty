@@ -43,6 +43,8 @@ export interface SoldCompsRawItem {
   title: string;
   soldPrice: string;
   soldCurrency: string;
+  shippingPrice: string;
+  shippingCurrency: string;
   url: string;
 }
 
@@ -55,6 +57,7 @@ export interface SoldCompsResponse {
 export interface EbayPriceEstimate {
   available: boolean;
   medianPrice: number | null;
+  medianShippingPrice: number | null;
   currency: string | null;
   comparableCount: number;
   reason: null | "capped" | "insufficient_comps";
@@ -62,4 +65,18 @@ export interface EbayPriceEstimate {
 
 export interface EnrichedCandidateItem extends CandidateItem {
   ebayPriceEstimate: EbayPriceEstimate;
+}
+
+export interface ProfitEvaluation {
+  eligible: boolean;
+  vintedCostBasis: number | null;
+  postageCost: number | null;
+  ebayFees: number | null;
+  netProfit: number | null;
+  marginPercent: number | null;
+  meetsThreshold: boolean;
+}
+
+export interface EvaluatedCandidateItem extends EnrichedCandidateItem {
+  profitEvaluation: ProfitEvaluation;
 }

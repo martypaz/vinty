@@ -51,6 +51,7 @@ describe("enrichCandidates", () => {
     expect(result.ebayPriceEstimate).toEqual({
       available: true,
       medianPrice: 75,
+      medianShippingPrice: 11,
       currency: "GBP",
       comparableCount: 4,
       reason: null,
@@ -66,6 +67,7 @@ describe("enrichCandidates", () => {
     expect(result.ebayPriceEstimate).toEqual({
       available: false,
       medianPrice: null,
+      medianShippingPrice: null,
       currency: null,
       comparableCount: 2,
       reason: "insufficient_comps",

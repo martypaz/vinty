@@ -63,6 +63,7 @@ Each candidate gets an `ebayPriceEstimate` field:
 {
   "available": true,
   "medianPrice": 59.05,
+  "medianShippingPrice": 8.5,
   "currency": "GBP",
   "comparableCount": 200,
   "reason": null
@@ -75,8 +76,48 @@ Each candidate gets an `ebayPriceEstimate` field:
   `available` is `false`.
 - Only the first 20 candidates in the input are looked up per run, to
   conserve SoldComps' request quota (the free tier is 100 requests/month).
-- `medianPrice` does not include shipping cost.
+- `medianPrice` does not include shipping cost; `medianShippingPrice` is the
+  median real shipping price paid across the same comps.
 
 If `SOLDCOMPS_API_KEY` is unset, or a SoldComps request fails, the command
 prints a clean one-line error to stderr and exits non-zero without
 processing further candidates.
+
+## Profit calculator (MAR-7)
+
+Reads price-lookup's output and adds a `profitEvaluation` field per
+candidate: is it actually worth buying, after Vinted's Buyer Protection fee,
+real postage, and eBay fees?
+
+```sh
+npm run scan | npm run price-lookup | npm run evaluate
+# or:
+npm run price-lookup candidates.json > enriched.json
+npm run evaluate enriched.json
+```
+
+```json
+{
+  "eligible": true,
+  "vintedCostBasis": 23.48,
+  "postageCost": 3.38,
+  "ebayFees": 0,
+  "netProfit": 31.84,
+  "marginPercent": 54.25,
+  "meetsThreshold": true
+}
+```
+
+- `vintedCostBasis` = item price + Vinted's Buyer Protection fee, estimated
+  at 8% + £0.80 (the conservative high end of Vinted's own published
+  3–8% + £0.30–£0.80 range — it doesn't publish an exact formula).
+- `postageCost` = the same median shipping price from `ebayPriceEstimate`.
+- `ebayFees` is always `0`: this assumes you're selling as a UK **private**
+  seller, who pays no final value fee, per-order fee, or regulatory fee
+  (business/registered sellers are out of scope — see MAR-7).
+- `meetsThreshold` is `true` only when net profit is at least £8 **and**
+  margin (profit ÷ eBay sale price) is at least 20%.
+- `eligible` is `false` (all other fields `null`) when there's no eBay price
+  data yet, or either currency isn't `"GBP"`.
+
+This command only reads already-fetched data — no new network calls.
