@@ -37,3 +37,29 @@ export interface VintedSearchResponse {
   items: VintedRawItem[];
   pagination: VintedPagination;
 }
+
+export interface SoldCompsRawItem {
+  itemId: string;
+  title: string;
+  soldPrice: string;
+  soldCurrency: string;
+  url: string;
+}
+
+export interface SoldCompsResponse {
+  keyword: string;
+  totalItems: number;
+  items: SoldCompsRawItem[];
+}
+
+export interface EbayPriceEstimate {
+  available: boolean;
+  medianPrice: number | null;
+  currency: string | null;
+  comparableCount: number;
+  reason: null | "capped" | "insufficient_comps";
+}
+
+export interface EnrichedCandidateItem extends CandidateItem {
+  ebayPriceEstimate: EbayPriceEstimate;
+}

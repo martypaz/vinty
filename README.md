@@ -42,3 +42,41 @@ without a raw stack trace.
   (excluding titles that mention women's/kids' sizing) rather than a
   verified server-side category ID, since Vinted's public search endpoint
   does not expose a working category/brand ID lookup.
+
+## eBay sold-comps price lookup (MAR-6)
+
+Reads a JSON array of candidates in the shape the scanner produces, and
+enriches each one with an `ebayPriceEstimate` (median sold price from real
+eBay UK sold listings, via the [SoldComps](https://sold-comps.com) API).
+
+```sh
+export SOLDCOMPS_API_KEY=sc_your_key_here   # get one at sold-comps.com
+npm run scan | npm run price-lookup
+# or:
+npm run scan > candidates.json
+npm run price-lookup candidates.json
+```
+
+Each candidate gets an `ebayPriceEstimate` field:
+
+```json
+{
+  "available": true,
+  "medianPrice": 59.05,
+  "currency": "GBP",
+  "comparableCount": 200,
+  "reason": null
+}
+```
+
+- `available` is `true` only when at least 3 matching sold comps were found.
+- `reason` is `"insufficient_comps"` (fewer than 3 comps found) or `"capped"`
+  (beyond the first 20 candidates in the input — no API call made) when
+  `available` is `false`.
+- Only the first 20 candidates in the input are looked up per run, to
+  conserve SoldComps' request quota (the free tier is 100 requests/month).
+- `medianPrice` does not include shipping cost.
+
+If `SOLDCOMPS_API_KEY` is unset, or a SoldComps request fails, the command
+prints a clean one-line error to stderr and exits non-zero without
+processing further candidates.

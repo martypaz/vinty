@@ -8,6 +8,7 @@
   },
   "scripts": {
     "scan": "tsx --env-file-if-exists=.env src/cli.ts",
+    "price-lookup": "tsx --env-file-if-exists=.env src/priceLookupCli.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

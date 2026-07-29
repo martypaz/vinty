@@ -1,0 +1,20 @@
+{
+  "keyword": "The North Face jacket",
+  "totalItems": 2,
+  "items": [
+    {
+      "itemId": "10",
+      "title": "The North Face jacket",
+      "soldPrice": "40.00",
+      "soldCurrency": "GBP",
+      "url": "https://www.ebay.co.uk/itm/10"
+    },
+    {
+      "itemId": "11",
+      "title": "The North Face rain jacket",
+      "soldPrice": "45.00",
+      "soldCurrency": "GBP",
+      "url": "https://www.ebay.co.uk/itm/11"
+    }
+  ]
+}
