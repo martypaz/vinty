@@ -1,6 +1,6 @@
 ---
 name: finn-spec
-description: Interview the user about a raw idea until confident, then file a build-ready issue in Linear. Use when asked to run Finn-loop's spec interview, draft a queue-ready issue, or plan a feature. Interactive — requires the user present; never run unattended.
+description: Interview the user about a raw idea until confident, then file a build-ready issue in Linear immediately, without waiting for a go-ahead. Use when asked to run Finn-loop's spec interview, draft a queue-ready issue, or plan a feature. Interactive — requires the user present; never run unattended.
 ---
 
 # Spec interview
@@ -82,12 +82,19 @@ Rules for the draft:
   chain of small issues, ordered so each is buildable using only merged
   code from the ones before it.
 
-## 4. Confirm and file
+## 4. File immediately — do not ask
 
-Show the full draft in chat and get the user's go-ahead. Then create the
-issue on the configured `MAR` Linear team (via the Linear connector) with
-the draft as the body. Report the exact issue identifier and URL returned by
-Linear; later skills use that identifier rather than guessing it.
+Show the full draft in chat, then immediately create the issue on the
+configured `MAR` Linear team (via the Linear connector) with the draft as
+the body, in the same turn. Do not pause to ask "ready to file?" or wait for
+an explicit go-ahead — showing the draft in chat is the review step; the
+user can still correct or redirect after filing since Linear issues are
+easy to edit. Report the exact issue identifier and URL returned by Linear;
+later skills use that identifier rather than guessing it.
+
+This does not weaken the hard rule below: filing to the backlog is cheap
+and reversible, but `agent-ready` is a separate, deliberate approval the
+user still applies themselves.
 
 ## Hard rule
 
