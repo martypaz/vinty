@@ -1,6 +1,6 @@
 ---
 name: finn-review
-description: Review open PRs against their linked Linear issues and required GitHub checks, then post a three-group verdict with Finn-loop labels. Use when asked to run Finn-loop's reviewer or review its PR queue. Designed for /loop; never merges or pushes code.
+description: Review open PRs against their linked Linear issues and required GitHub checks, then post a three-group verdict with Finn-loop labels. Auto-merges a PR only when the verdict is clean and required CI checks passed. Use when asked to run Finn-loop's reviewer or review its PR queue. Designed for /loop; never pushes code, and never merges outside the exact clean-approval case below.
 ---
 
 # Finn-loop reviewer
@@ -62,8 +62,8 @@ gh pr checks NUMBER --required --json bucket,name,state,link
   do not apply `loop-approved`. Finn-loop does not treat missing CI as green.
 
 Review the exact `headRefOid` used for this evidence. Re-fetch it immediately
-before posting. If it changed, discard the review and start again on a future
-pass.
+before posting and again immediately before merging in step 5. If it changed
+at either point, discard the review and start again on a future pass.
 
 ## 4. Post one verdict
 
@@ -89,8 +89,12 @@ None.
 
 ## 3. Safe to merge
 
-Yes — automated review evidence is complete. A human still makes the merge decision.
+Yes — automated review evidence is complete. Merging automatically.
 ```
+
+If the verdict is not clean (must-fix findings, scope conflict, or missing
+required CI), write "No — human decision required" or "No — fix required"
+as appropriate instead, matching the label set in the next section.
 
 Then set labels based on the verdict, checking existing labels before removing
 them so an absent label does not fail the command:
@@ -108,11 +112,49 @@ must resolve the reason, change the issue or repository configuration as
 needed, and remove `needs-human-review` before Finn-loop reviews that unchanged
 commit again.
 
-## 5. Hard limits
+## 5. Merge (only on a clean approval)
 
-- Never merge or enable auto-merge.
+Auto-merge is the exception, not the default. Merge now only if **every**
+condition holds:
+
+- The verdict just posted has no must-fix findings and no scope conflict
+  (the `loop-approved` case).
+- The PR does not carry a pre-existing `needs-human-review` label — that
+  label is a separate human gate this pass does not have context to lift,
+  even if this review pass found nothing wrong.
+- Required CI checks are present and passed (never merge when the repo has
+  no required checks — that case already routes to `needs-human-review` in
+  step 4).
+- `mergeStateStatus` is `clean`.
+- Re-fetching `headRefOid` right now still matches the SHA this verdict was
+  posted against — if it changed, stop, do not merge, and let a future pass
+  review the new commit instead.
+
+If all of that holds:
+
+```bash
+gh pr merge NUMBER --merge --delete-branch
+```
+
+Comment the outcome on the Linear issue only if the merge command itself
+fails (e.g. another process merged or closed it first, or branch protection
+rejected it) — report that plainly and do not retry within this pass. On a
+successful merge, no separate Linear update is needed: the Linear-GitHub
+integration moves the issue automatically.
+
+If any condition above does not hold, do not merge. This is the normal case
+for `loop-changes-requested` and `needs-human-review` verdicts, and the pass
+ends after labeling as described in step 4.
+
+## 6. Hard limits
+
+- Auto-merge happens in exactly the case described in step 5 — nowhere else.
+  A clean verdict alone is not enough; every condition in step 5 must hold.
 - Never push commits to the PR branch.
 - Never approve or request changes through a formal GitHub review. Use one
   comment plus labels because the loop may run on the PR author's token and
   GitHub rejects self-reviews.
-- `loop-approved` is evidence for a human, not merge authorization.
+- `loop-approved` together with a successful merge in the same pass is this
+  system's actual merge authorization for that PR — everything before that
+  point (findings, CI evidence, mergeability) is what justifies it, so do
+  not shortcut steps 2-3 to reach step 5 faster.
