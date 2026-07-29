@@ -7,6 +7,8 @@
       "title": "The North Face jacket",
       "soldPrice": "40.00",
       "soldCurrency": "GBP",
+      "shippingPrice": "5.00",
+      "shippingCurrency": "GBP",
       "url": "https://www.ebay.co.uk/itm/10"
     },
     {
@@ -14,6 +16,8 @@
       "title": "The North Face rain jacket",
       "soldPrice": "45.00",
       "soldCurrency": "GBP",
+      "shippingPrice": "6.00",
+      "shippingCurrency": "GBP",
       "url": "https://www.ebay.co.uk/itm/11"
     }
   ]
