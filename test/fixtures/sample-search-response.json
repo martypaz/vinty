@@ -1,0 +1,133 @@
+{
+  "items": [
+    {
+      "id": 1001,
+      "title": "Barbour Puffer coat",
+      "brand_title": "Barbour",
+      "status": "Very good",
+      "price": { "amount": "20.0", "currency_code": "GBP" },
+      "size_title": "M",
+      "url": "https://www.vinted.co.uk/items/1001-barbour-puffer-coat",
+      "photos": [
+        { "url": "https://images1.vinted.net/1001-a.jpeg" },
+        { "url": "https://images1.vinted.net/1001-b.jpeg" }
+      ]
+    },
+    {
+      "id": 1002,
+      "title": "Barbour wax coat, too expensive",
+      "brand_title": "Barbour",
+      "status": "Very good",
+      "price": { "amount": "30.0", "currency_code": "GBP" },
+      "size_title": "L",
+      "url": "https://www.vinted.co.uk/items/1002-too-expensive",
+      "photos": [{ "url": "https://images1.vinted.net/1002-a.jpeg" }]
+    },
+    {
+      "id": 1003,
+      "title": "Barbour jacket, only good condition",
+      "brand_title": "Barbour",
+      "status": "Good",
+      "price": { "amount": "10.0", "currency_code": "GBP" },
+      "size_title": "S",
+      "url": "https://www.vinted.co.uk/items/1003-only-good",
+      "photos": [{ "url": "https://images1.vinted.net/1003-a.jpeg" }]
+    },
+    {
+      "id": 1004,
+      "title": "Nike jacket, wrong brand",
+      "brand_title": "Nike",
+      "status": "Very good",
+      "price": { "amount": "15.0", "currency_code": "GBP" },
+      "size_title": "M",
+      "url": "https://www.vinted.co.uk/items/1004-wrong-brand",
+      "photos": [{ "url": "https://images1.vinted.net/1004-a.jpeg" }]
+    },
+    {
+      "id": 1005,
+      "title": "Barbour womens coat, excluded category",
+      "brand_title": "Barbour",
+      "status": "Very good",
+      "price": { "amount": "15.0", "currency_code": "GBP" },
+      "size_title": "UK 12",
+      "url": "https://www.vinted.co.uk/items/1005-womens",
+      "photos": [{ "url": "https://images1.vinted.net/1005-a.jpeg" }]
+    },
+    {
+      "id": 1006,
+      "title": "Barbour coat new with tags",
+      "brand_title": "Barbour",
+      "status": "New with tags",
+      "price": { "amount": "10.0", "currency_code": "GBP" },
+      "size_title": "M",
+      "url": "https://www.vinted.co.uk/items/1006-nwt",
+      "photo": { "url": "https://images1.vinted.net/1006-single.jpeg" }
+    },
+    {
+      "id": 1007,
+      "title": "The North Face jacket",
+      "brand_title": "The North Face",
+      "status": "New without tags",
+      "price": { "amount": "22.0", "currency_code": "GBP" },
+      "size_title": "L",
+      "url": "https://www.vinted.co.uk/items/1007-tnf",
+      "photos": [{ "url": "https://images1.vinted.net/1007-a.jpeg" }]
+    },
+    {
+      "id": 1008,
+      "title": "Boys Barbour jacket age 10",
+      "brand_title": "Barbour",
+      "status": "Very good",
+      "price": { "amount": "12.0", "currency_code": "GBP" },
+      "size_title": "10-11y",
+      "url": "https://www.vinted.co.uk/items/1008-boys",
+      "photos": [{ "url": "https://images1.vinted.net/1008-a.jpeg" }]
+    },
+    {
+      "id": 1009,
+      "title": "Dog Barbour quilted coat",
+      "brand_title": "Barbour",
+      "status": "Very good",
+      "price": { "amount": "12.0", "currency_code": "GBP" },
+      "size_title": "S",
+      "url": "https://www.vinted.co.uk/items/1009-dog",
+      "photos": [{ "url": "https://images1.vinted.net/1009-a.jpeg" }]
+    },
+    {
+      "id": 1010,
+      "title": "child's black padded barbour jacket age 9/10yrs",
+      "brand_title": "Barbour",
+      "status": "Very good",
+      "price": { "amount": "12.0", "currency_code": "GBP" },
+      "size_title": "9-10y",
+      "url": "https://www.vinted.co.uk/items/1010-childs",
+      "photos": [{ "url": "https://images1.vinted.net/1010-a.jpeg" }]
+    },
+    {
+      "id": 1011,
+      "title": "Quilted Barbour coat jacket age 2/3",
+      "brand_title": "Barbour",
+      "status": "Very good",
+      "price": { "amount": "7.0", "currency_code": "GBP" },
+      "size_title": "2-3y",
+      "url": "https://www.vinted.co.uk/items/1011-age",
+      "photos": [{ "url": "https://images1.vinted.net/1011-a.jpeg" }]
+    },
+    {
+      "id": 1012,
+      "title": "Black Barbour liddlesdale jacket XL 12-13 years",
+      "brand_title": "Barbour",
+      "status": "Very good",
+      "price": { "amount": "5.0", "currency_code": "GBP" },
+      "size_title": "XL 12-13 years",
+      "url": "https://www.vinted.co.uk/items/1012-years-size",
+      "photos": [{ "url": "https://images1.vinted.net/1012-a.jpeg" }]
+    }
+  ],
+  "pagination": {
+    "current_page": 1,
+    "total_pages": 1,
+    "total_entries": 12,
+    "per_page": 20
+  }
+}
