@@ -165,6 +165,27 @@ If `SLACK_BOT_TOKEN` is unset, or the input isn't valid JSON, the command
 prints a clean one-line error to stderr and exits non-zero before any API
 calls.
 
+## Persistence (MAR-9)
+
+`notify` now also saves every candidate it Slacks into a local SQLite
+database (`data/vinty.sqlite3`, auto-created, gitignored), keyed by Vinted
+item id:
+
+- New items are inserted with `status = 'new'`.
+- Re-processing the same item updates its data fields but never overwrites
+  a status you've already progressed past `'new'` — a re-scan won't reset
+  something you've marked as ordered back to "new".
+- The database write is attempted independently of the Slack post. A
+  candidate's `notification.success` is now `true` only when **both** the
+  Slack post and the database save succeeded; the `error` field reports
+  whichever failed (Slack takes precedence if both did).
+- Override the database path with `VINTY_DB_PATH` (mainly useful for tests
+  — set it to `:memory:` for a throwaway in-memory database).
+
+This is the foundation for a future backend API + React UI to manage
+listings across "new", "ordered/pending delivery", and "eBay listings"
+stages — not built yet.
+
 ## Automated checks & auto-merge
 
 Every push and PR runs `.github/workflows/ci.yml` (typecheck + test) via
