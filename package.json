@@ -12,6 +12,7 @@
     "evaluate": "tsx --env-file-if-exists=.env src/profitCalculatorCli.ts",
     "notify": "tsx --env-file-if-exists=.env src/slackNotifierCli.ts",
     "api": "tsx --env-file-if-exists=.env src/serverCli.ts",
+    "ui": "npm run dev --prefix client",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

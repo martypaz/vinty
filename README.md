@@ -210,12 +210,41 @@ CORS is enabled so a future React dev server (a different port) can call it.
   manually type — there's no real eBay API integration.
 - Both PATCH endpoints return `404` for an unknown listing id.
 
-This is a foundation for the future React UI — no frontend exists yet.
+This is a foundation for the React UI (MAR-11) below.
+
+## React UI shell (MAR-11)
+
+```sh
+npm run api   # in one terminal — the backend from MAR-10
+npm run ui    # in another terminal — starts the Vite dev server
+```
+
+A Vite + React + TypeScript single-page app in `client/` (its own
+`package.json`, independent of the root project). Three tabs: **New
+Listings**, **Ordered**, **eBay Listings**.
+
+- **New Listings** is the only functional tab today. On load, and on
+  clicking **Refresh**, it fetches `GET /api/listings?status=new` and
+  renders a card per listing: first photo, title (linked to the Vinted
+  listing, opens in a new tab), brand, condition, size, Vinted price,
+  eBay estimated price, net profit, and margin.
+- Each card has a **Mark as Ordered** button (`PATCH
+  /api/listings/:id/order`); on success the list refetches and the item
+  disappears; on failure an inline error shows on that card and the item
+  stays.
+- **Ordered** and **eBay Listings** are "Coming soon" placeholders —
+  built in later issues.
+- No auth, no auto-polling (refresh is manual), no styling framework —
+  plain functional CSS.
+- The API base URL defaults to `http://localhost:3001`; override with
+  `VITE_API_BASE_URL` (e.g. in `client/.env`) if the API runs elsewhere.
 
 ## Automated checks & auto-merge
 
-Every push and PR runs `.github/workflows/ci.yml` (typecheck + test) via
-GitHub Actions. `main` requires this check to pass before anything merges.
+Every push and PR runs `.github/workflows/ci.yml` via GitHub Actions:
+typecheck + test for the root project, and install + typecheck + test +
+build for `client/`. `main` requires this check to pass before anything
+merges.
 Finn-loop's reviewer (`finn-review`) auto-merges a PR only when its review
 is clean (no must-fix findings), the PR carries no pre-existing
 `needs-human-review` label, and this required check has actually passed —
