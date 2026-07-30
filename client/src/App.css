@@ -1,0 +1,99 @@
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tab-active {
+  background: #333;
+  color: #fff;
+  border-color: #333;
+}
+
+.coming-soon {
+  color: #666;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.error {
+  color: #b00020;
+}
+
+.empty-state,
+.loading-state {
+  color: #666;
+}
+
+.listing-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.listing-card {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.listing-photo {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.listing-title {
+  font-weight: 600;
+}
+
+.listing-details {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.listing-details > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.listing-details dt {
+  color: #666;
+}
+
+.listing-details dd {
+  margin: 0;
+}
