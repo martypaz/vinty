@@ -46,6 +46,26 @@ function makeEvaluatedCandidate(
       meetsThreshold: true,
       ...overrides.profitEvaluation,
     },
+    soldComps: [
+      {
+        itemId: "1",
+        title: "Barbour Liddesdale coat",
+        soldPrice: 70,
+        soldCurrency: "GBP",
+        shippingPrice: 8,
+        shippingCurrency: "GBP",
+        url: "https://www.ebay.co.uk/itm/1",
+      },
+      {
+        itemId: "2",
+        title: "Barbour wax coat",
+        soldPrice: 80,
+        soldCurrency: "GBP",
+        shippingPrice: 10,
+        shippingCurrency: "GBP",
+        url: "https://www.ebay.co.uk/itm/2",
+      },
+    ],
     ...overrides,
   };
 }
@@ -272,6 +292,81 @@ describe("notifyCandidates", () => {
       expect(result.notification.success).toBe(false);
       expect(result.notification.error).toBeTruthy();
     }
+  });
+
+  it("records a price snapshot with its comps for a qualifying candidate (MAR-14 AC-3, AC-4)", async () => {
+    const fetchMock = vi.fn(async () => slackJson({ ok: true }));
+    vi.stubGlobal("fetch", fetchMock);
+    const db = makeTestDb();
+
+    const candidate = makeEvaluatedCandidate();
+    await notifyCandidates([candidate], db, "xoxb-test-token");
+
+    const snapshots = db
+      .prepare("SELECT * FROM price_snapshots WHERE vinted_id = ?")
+      .all(candidate.id) as Record<string, unknown>[];
+    expect(snapshots).toHaveLength(1);
+    const snapshot = snapshots[0];
+    expect(snapshot.ebay_median_price).toBe(candidate.ebayPriceEstimate.medianPrice);
+    expect(snapshot.ebay_median_shipping_price).toBe(candidate.ebayPriceEstimate.medianShippingPrice);
+    expect(snapshot.ebay_comparable_count).toBe(candidate.ebayPriceEstimate.comparableCount);
+    expect(snapshot.ebay_currency).toBe(candidate.ebayPriceEstimate.currency);
+    expect(snapshot.net_profit).toBe(candidate.profitEvaluation.netProfit);
+    expect(snapshot.margin_percent).toBe(candidate.profitEvaluation.marginPercent);
+    expect(snapshot.recorded_at).toBeTruthy();
+
+    const comps = db
+      .prepare("SELECT * FROM price_snapshot_comps WHERE snapshot_id = ?")
+      .all(snapshot.id as number) as Record<string, unknown>[];
+    expect(comps).toHaveLength(candidate.soldComps.length);
+    expect(comps[0].item_id).toBe(candidate.soldComps[0].itemId);
+    expect(comps[0].url).toBe(candidate.soldComps[0].url);
+  });
+
+  it("records a new snapshot row on every run, even with identical numbers (MAR-14 AC-4)", async () => {
+    const fetchMock = vi.fn(async () => slackJson({ ok: true }));
+    vi.stubGlobal("fetch", fetchMock);
+    const db = makeTestDb();
+
+    const candidate = makeEvaluatedCandidate();
+    await notifyCandidates([candidate], db, "xoxb-test-token");
+    await notifyCandidates([candidate], db, "xoxb-test-token");
+
+    const snapshots = db
+      .prepare("SELECT * FROM price_snapshots WHERE vinted_id = ?")
+      .all(candidate.id);
+    expect(snapshots).toHaveLength(2);
+  });
+
+  it("rolls back both the listing upsert and the price snapshot if either write fails (MAR-14 AC-4)", async () => {
+    const fetchMock = vi.fn(async () => slackJson({ ok: true }));
+    vi.stubGlobal("fetch", fetchMock);
+    const db = makeTestDb();
+
+    // ebay_currency is NOT NULL on price_snapshots, so this forces the
+    // snapshot insert to fail after the listing upsert has already run in
+    // the same transaction - proving both writes roll back together.
+    const candidate = makeEvaluatedCandidate({
+      ebayPriceEstimate: {
+        available: true,
+        medianPrice: 75,
+        medianShippingPrice: 11,
+        currency: null as unknown as string,
+        comparableCount: 4,
+        reason: null,
+      },
+    });
+
+    const [result] = await notifyCandidates([candidate], db, "xoxb-test-token");
+
+    expect(result.notification.success).toBe(false);
+    expect(result.notification.error).toMatch(/price snapshot/i);
+    const listingRow = db.prepare("SELECT * FROM listings WHERE vinted_id = ?").get(candidate.id);
+    expect(listingRow).toBeUndefined();
+    const snapshotRows = db
+      .prepare("SELECT * FROM price_snapshots WHERE vinted_id = ?")
+      .all(candidate.id);
+    expect(snapshotRows).toHaveLength(0);
   });
 });
 
