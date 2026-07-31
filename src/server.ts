@@ -3,6 +3,7 @@ import cors from "cors";
 import type Database from "better-sqlite3";
 
 import { openDb } from "./db.js";
+import { clearApprovalsPosts } from "./slackTools.js";
 
 const DEFAULT_PORT = 3001;
 
@@ -217,6 +218,17 @@ export function createApp(db: Database.Database) {
     ).run(now, title, price, url, now, id);
 
     res.json(toApiListing(getListingRow(db, id) as ListingRow));
+  });
+
+  app.post("/api/tools/clear-approvals-posts", async (_req: Request, res: Response) => {
+    try {
+      const result = await clearApprovalsPosts();
+      res.json(result);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Unknown error clearing #approvals posts";
+      res.status(500).json({ error: message });
+    }
   });
 
   return app;

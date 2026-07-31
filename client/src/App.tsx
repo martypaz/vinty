@@ -3,8 +3,9 @@ import './App.css'
 import { NewListings } from './NewListings'
 import { Ordered } from './Ordered'
 import { EbayListings } from './EbayListings'
+import { Tools } from './Tools'
 
-const TABS = ['New Listings', 'Ordered', 'eBay Listings'] as const
+const TABS = ['New Listings', 'Ordered', 'eBay Listings', 'Tools'] as const
 type Tab = (typeof TABS)[number]
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
         {activeTab === 'New Listings' && <NewListings />}
         {activeTab === 'Ordered' && <Ordered />}
         {activeTab === 'eBay Listings' && <EbayListings />}
+        {activeTab === 'Tools' && <Tools />}
       </main>
     </div>
   )

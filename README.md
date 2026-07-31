@@ -239,6 +239,35 @@ Listings**, **Ordered**, **eBay Listings**.
 - The API base URL defaults to `http://localhost:3001`; override with
   `VITE_API_BASE_URL` (e.g. in `client/.env`) if the API runs elsewhere.
 
+## Tools tab: clear #approvals bot posts (MAR-16)
+
+A fourth **Tools** tab lists utility actions. The first (and currently
+only) one is **Clear #approvals bot posts** — deletes every message this
+bot has posted to `#approvals`, in one click, with no confirmation step.
+Clicking it immediately deletes; this cannot be undone.
+
+**Prerequisites** (one-time, done manually in Slack — not covered by any
+code in this repo):
+
+1. In your Slack app's settings at api.slack.com, add the
+   `channels:history` OAuth scope (needed to read the channel's message
+   history — the existing token only had `chat:write`, for posting).
+2. Reinstall the app to the workspace, and copy the newly issued bot
+   token into `SLACK_BOT_TOKEN` in `.env`.
+3. Get `#approvals`' channel ID (Slack's channel details panel, or the
+   `/messages/<ID>` part of the channel's URL) and set it as
+   `SLACK_APPROVALS_CHANNEL_ID` in `.env`.
+
+How it works: `POST /api/tools/clear-approvals-posts` calls Slack's
+`auth.test` to determine this bot's own `bot_id`, pages through
+`conversations.history` for the configured channel, and calls
+`chat.delete` on every message whose `bot_id` matches — a bot token can
+only ever delete messages it posted itself; there's no way (short of a
+Slack admin app) to delete other users' messages. A short delay between
+each delete call keeps it under Slack's rate limit. The result reports
+how many were deleted, and how many (if any) failed, without stopping the
+rest of the batch partway through.
+
 ## Automated checks & auto-merge
 
 Every push and PR runs `.github/workflows/ci.yml` via GitHub Actions:

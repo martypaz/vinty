@@ -119,3 +119,19 @@ export async function fetchListingHistory(vintedId: number): Promise<PriceSnapsh
   }
   return (await res.json()) as PriceSnapshot[]
 }
+
+export interface ClearApprovalsResult {
+  deletedCount: number
+  failedCount: number
+  errors: string[]
+}
+
+export async function clearApprovalsPosts(): Promise<ClearApprovalsResult> {
+  const res = await fetch(new URL('/api/tools/clear-approvals-posts', API_BASE_URL), {
+    method: 'POST',
+  })
+  if (!res.ok) {
+    throw new Error(await parseErrorMessage(res, `Failed to clear #approvals posts (${res.status})`))
+  }
+  return (await res.json()) as ClearApprovalsResult
+}
