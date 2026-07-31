@@ -88,3 +88,34 @@ export async function submitEbayListing(
   }
   return (await res.json()) as Listing
 }
+
+export interface SoldComp {
+  itemId: string
+  title: string
+  soldPrice: number
+  soldCurrency: string
+  shippingPrice: number
+  shippingCurrency: string | null
+  url: string
+}
+
+export interface PriceSnapshot {
+  recordedAt: string
+  ebayMedianPrice: number
+  ebayMedianShippingPrice: number
+  ebayComparableCount: number
+  ebayCurrency: string
+  netProfit: number
+  marginPercent: number
+  comps: SoldComp[]
+}
+
+export async function fetchListingHistory(vintedId: number): Promise<PriceSnapshot[]> {
+  const res = await fetch(new URL(`/api/listings/${vintedId}/history`, API_BASE_URL))
+  if (!res.ok) {
+    throw new Error(
+      await parseErrorMessage(res, `Failed to fetch price history for ${vintedId} (${res.status})`)
+    )
+  }
+  return (await res.json()) as PriceSnapshot[]
+}

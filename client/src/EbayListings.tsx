@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { fetchListings, type Listing } from './api'
+import { ListingDetailModal } from './ListingDetailModal'
 
 export function EbayListings() {
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [detailListing, setDetailListing] = useState<Listing | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -98,9 +100,16 @@ export function EbayListings() {
             <a href={listing.vintedUrl} target="_blank" rel="noreferrer" className="secondary-link">
               View original Vinted listing →
             </a>
+            <button type="button" onClick={() => setDetailListing(listing)}>
+              View details
+            </button>
           </li>
         ))}
       </ul>
+
+      {detailListing && (
+        <ListingDetailModal listing={detailListing} onClose={() => setDetailListing(null)} />
+      )}
     </section>
   )
 }

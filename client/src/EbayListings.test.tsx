@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { EbayListings } from './EbayListings'
 import type { Listing } from './api'
 
@@ -81,5 +81,21 @@ describe('EbayListings', () => {
     render(<EbayListings />)
 
     expect(await screen.findByRole('alert')).toHaveTextContent('boom')
+  })
+
+  it('opens the listing detail modal when View details is clicked', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse([listing]))
+      .mockResolvedValueOnce(jsonResponse([]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(<EbayListings />)
+
+    const detailsButton = await screen.findByRole('button', { name: 'View details' })
+    fireEvent.click(detailsButton)
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: listing.title })).toBeInTheDocument()
   })
 })

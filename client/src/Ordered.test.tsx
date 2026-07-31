@@ -170,4 +170,20 @@ describe('Ordered', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
+
+  it('opens the listing detail modal when View details is clicked', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse([listing]))
+      .mockResolvedValueOnce(jsonResponse([]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(<Ordered />)
+
+    const detailsButton = await screen.findByRole('button', { name: 'View details' })
+    fireEvent.click(detailsButton)
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: listing.title })).toBeInTheDocument()
+  })
 })

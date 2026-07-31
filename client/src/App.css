@@ -144,3 +144,83 @@
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
+
+.fullscreen-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 20;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.fullscreen-modal {
+  position: relative;
+  background: #fff;
+  width: 100%;
+  max-width: 720px;
+  margin: 2rem;
+  padding: 2rem;
+  border-radius: 6px;
+}
+
+.fullscreen-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.fullscreen-modal-photo {
+  width: 200px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.fullscreen-modal-links {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.price-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.price-history-item {
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 0.75rem;
+}
+
+.price-history-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.price-history-comps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}

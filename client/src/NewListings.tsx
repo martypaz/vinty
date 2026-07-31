@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { fetchListings, markAsOrdered, type Listing } from './api'
+import { ListingDetailModal } from './ListingDetailModal'
 
 export function NewListings() {
   const [listings, setListings] = useState<Listing[]>([])
@@ -7,6 +8,7 @@ export function NewListings() {
   const [error, setError] = useState<string | null>(null)
   const [orderingId, setOrderingId] = useState<number | null>(null)
   const [orderErrors, setOrderErrors] = useState<Record<number, string>>({})
+  const [detailListing, setDetailListing] = useState<Listing | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -120,6 +122,9 @@ export function NewListings() {
             >
               {orderingId === listing.vintedId ? 'Marking…' : 'Mark as Ordered'}
             </button>
+            <button type="button" onClick={() => setDetailListing(listing)}>
+              View details
+            </button>
             {orderErrors[listing.vintedId] && (
               <p className="error" role="alert">
                 {orderErrors[listing.vintedId]}
@@ -128,6 +133,10 @@ export function NewListings() {
           </li>
         ))}
       </ul>
+
+      {detailListing && (
+        <ListingDetailModal listing={detailListing} onClose={() => setDetailListing(null)} />
+      )}
     </section>
   )
 }
