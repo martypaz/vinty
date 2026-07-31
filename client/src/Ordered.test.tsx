@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Ordered } from './Ordered'
 import type { Listing } from './api'
 
@@ -43,7 +43,6 @@ async function openModal() {
 
 describe('Ordered', () => {
   afterEach(() => {
-    cleanup()
     vi.unstubAllGlobals()
   })
 

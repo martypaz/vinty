@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { NewListings } from './NewListings'
 import type { Listing } from './api'
 
@@ -37,7 +37,6 @@ const listing: Listing = {
 
 describe('NewListings', () => {
   afterEach(() => {
-    cleanup()
     vi.unstubAllGlobals()
   })
 
