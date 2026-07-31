@@ -2,13 +2,10 @@ import { useState } from 'react'
 import './App.css'
 import { NewListings } from './NewListings'
 import { Ordered } from './Ordered'
+import { EbayListings } from './EbayListings'
 
 const TABS = ['New Listings', 'Ordered', 'eBay Listings'] as const
 type Tab = (typeof TABS)[number]
-
-function ComingSoon() {
-  return <p className="coming-soon">Coming soon.</p>
-}
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('New Listings')
@@ -33,7 +30,7 @@ function App() {
       <main className="app-main">
         {activeTab === 'New Listings' && <NewListings />}
         {activeTab === 'Ordered' && <Ordered />}
-        {activeTab === 'eBay Listings' && <ComingSoon />}
+        {activeTab === 'eBay Listings' && <EbayListings />}
       </main>
     </div>
   )

@@ -98,6 +98,11 @@
   margin: 0;
 }
 
+.secondary-link {
+  font-size: 0.8rem;
+  color: #666;
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
