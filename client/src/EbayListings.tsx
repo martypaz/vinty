@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { fetchListings, type Listing } from './api'
 import { ListingDetailModal } from './ListingDetailModal'
 
+function profitColor(value: number): string {
+  return value >= 0 ? '#16a34a' : '#dc2626'
+}
+
 export function EbayListings() {
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,61 +54,54 @@ export function EbayListings() {
       )}
 
       <ul className="listing-grid">
-        {listings.map((listing) => (
-          <li key={listing.vintedId} className="listing-card">
-            {listing.photos[0] && <img src={listing.photos[0]} alt="" className="listing-photo" />}
-            <a
-              href={listing.ebayListing?.url}
-              target="_blank"
-              rel="noreferrer"
-              className="listing-title"
-            >
-              {listing.ebayListing?.title}
-            </a>
-            <dl className="listing-details">
-              <div>
-                <dt>Listed</dt>
-                <dd>{listing.listedAt?.slice(0, 10)}</dd>
+        {listings.map((listing) => {
+          const color = profitColor(listing.netProfit)
+          return (
+            <li key={listing.vintedId} className="listing-card">
+              <div className="listing-card-photo">
+                {listing.photos[0] ? <img src={listing.photos[0]} alt="" /> : 'photo'}
               </div>
-              <div>
-                <dt>eBay price</dt>
-                <dd>{listing.ebayListing?.price.toFixed(2)}</dd>
+              <div className="listing-card-body">
+                <a
+                  href={listing.ebayListing?.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="listing-card-title"
+                >
+                  {listing.ebayListing?.title}
+                </a>
+                <div className="listing-card-meta">
+                  {listing.brand} · {listing.condition} · Size {listing.size}
+                  {listing.listedAt && ` · Listed ${listing.listedAt.slice(0, 10)}`}
+                </div>
+                <div className="listing-card-stats">
+                  <div className="stat-label">Vinted</div>
+                  <div className="stat-value">
+                    {listing.vintedPrice.amount.toFixed(2)} {listing.vintedPrice.currency}
+                  </div>
+                  <div className="stat-label">eBay price</div>
+                  <div className="stat-value">{listing.ebayListing?.price.toFixed(2)}</div>
+                  <div className="stat-label">Profit</div>
+                  <div className="stat-value emphasis" style={{ color }}>
+                    {listing.netProfit.toFixed(2)}
+                  </div>
+                  <div className="stat-label">Margin</div>
+                  <div className="stat-value emphasis" style={{ color }}>
+                    {listing.marginPercent.toFixed(1)}%
+                  </div>
+                </div>
+                <div className="listing-card-footer">
+                  <button type="button" className="view-details-link" onClick={() => setDetailListing(listing)}>
+                    View details
+                  </button>
+                  <a href={listing.vintedUrl} target="_blank" rel="noreferrer" className="secondary-link">
+                    View original Vinted listing →
+                  </a>
+                </div>
               </div>
-              <div>
-                <dt>Vinted price</dt>
-                <dd>
-                  {listing.vintedPrice.amount.toFixed(2)} {listing.vintedPrice.currency}
-                </dd>
-              </div>
-              <div>
-                <dt>Net profit</dt>
-                <dd>{listing.netProfit.toFixed(2)}</dd>
-              </div>
-              <div>
-                <dt>Margin</dt>
-                <dd>{listing.marginPercent.toFixed(1)}%</dd>
-              </div>
-              <div>
-                <dt>Brand</dt>
-                <dd>{listing.brand}</dd>
-              </div>
-              <div>
-                <dt>Condition</dt>
-                <dd>{listing.condition}</dd>
-              </div>
-              <div>
-                <dt>Size</dt>
-                <dd>{listing.size}</dd>
-              </div>
-            </dl>
-            <a href={listing.vintedUrl} target="_blank" rel="noreferrer" className="secondary-link">
-              View original Vinted listing →
-            </a>
-            <button type="button" onClick={() => setDetailListing(listing)}>
-              View details
-            </button>
-          </li>
-        ))}
+            </li>
+          )
+        })}
       </ul>
 
       {detailListing && (

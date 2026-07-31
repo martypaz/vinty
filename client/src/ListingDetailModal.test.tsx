@@ -92,14 +92,19 @@ describe('ListingDetailModal', () => {
 
     render(<ListingDetailModal listing={listing} onClose={onClose} />)
 
-    expect(screen.getByRole('heading', { name: listing.title })).toBeInTheDocument()
-    expect(screen.getByText(listing.brand)).toBeInTheDocument()
-    expect(screen.getByText(listing.condition)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Listing details' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: listing.title })).toHaveAttribute(
+      'href',
+      listing.vintedUrl
+    )
+    expect(
+      screen.getByText(`${listing.brand} · ${listing.condition} · Size ${listing.size}`)
+    ).toBeInTheDocument()
     expect(screen.getByText('18.50 GBP')).toBeInTheDocument()
 
-    const vintedLink = screen.getByRole('link', { name: /view on vinted/i })
+    const vintedLink = screen.getByRole('link', { name: /vinted listing/i })
     expect(vintedLink).toHaveAttribute('href', listing.vintedUrl)
-    const ebayLink = screen.getByRole('link', { name: /view on ebay/i })
+    const ebayLink = screen.getByRole('link', { name: /ebay listing/i })
     expect(ebayLink).toHaveAttribute('href', listing.ebayListing!.url)
   })
 

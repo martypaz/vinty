@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { fetchListings, markAsOrdered, type Listing } from './api'
 import { ListingDetailModal } from './ListingDetailModal'
 
+function profitColor(value: number): string {
+  return value >= 0 ? '#16a34a' : '#dc2626'
+}
+
 export function NewListings() {
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,66 +76,63 @@ export function NewListings() {
       )}
 
       <ul className="listing-grid">
-        {listings.map((listing) => (
-          <li key={listing.vintedId} className="listing-card">
-            {listing.photos[0] && <img src={listing.photos[0]} alt="" className="listing-photo" />}
-            <a
-              href={listing.vintedUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="listing-title"
-            >
-              {listing.title}
-            </a>
-            <dl className="listing-details">
-              <div>
-                <dt>Brand</dt>
-                <dd>{listing.brand}</dd>
+        {listings.map((listing) => {
+          const color = profitColor(listing.netProfit)
+          return (
+            <li key={listing.vintedId} className="listing-card">
+              <div className="listing-card-photo">
+                {listing.photos[0] ? <img src={listing.photos[0]} alt="" /> : 'photo'}
               </div>
-              <div>
-                <dt>Condition</dt>
-                <dd>{listing.condition}</dd>
+              <div className="listing-card-body">
+                <a
+                  href={listing.vintedUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="listing-card-title"
+                >
+                  {listing.title}
+                </a>
+                <div className="listing-card-meta">
+                  {listing.brand} · {listing.condition} · Size {listing.size}
+                </div>
+                <div className="listing-card-stats">
+                  <div className="stat-label">Vinted</div>
+                  <div className="stat-value">
+                    {listing.vintedPrice.amount.toFixed(2)} {listing.vintedPrice.currency}
+                  </div>
+                  <div className="stat-label">eBay est.</div>
+                  <div className="stat-value">{listing.ebayMedianPrice.toFixed(2)}</div>
+                  <div className="stat-label">Profit</div>
+                  <div className="stat-value emphasis" style={{ color }}>
+                    {listing.netProfit.toFixed(2)}
+                  </div>
+                  <div className="stat-label">Margin</div>
+                  <div className="stat-value emphasis" style={{ color }}>
+                    {listing.marginPercent.toFixed(1)}%
+                  </div>
+                </div>
+                <div className="listing-card-footer">
+                  <button type="button" className="view-details-link" onClick={() => setDetailListing(listing)}>
+                    View details
+                  </button>
+                  <button
+                    type="button"
+                    className="card-action-button"
+                    onClick={() => handleMarkAsOrdered(listing.vintedId)}
+                    disabled={orderingId === listing.vintedId}
+                  >
+                    {orderingId === listing.vintedId ? 'Marking…' : 'Mark as Ordered'}
+                  </button>
+                </div>
+                {orderErrors[listing.vintedId] && (
+                  <p className="error" role="alert">
+                    {orderErrors[listing.vintedId]}
+                  </p>
+                )}
               </div>
-              <div>
-                <dt>Size</dt>
-                <dd>{listing.size}</dd>
-              </div>
-              <div>
-                <dt>Vinted price</dt>
-                <dd>
-                  {listing.vintedPrice.amount.toFixed(2)} {listing.vintedPrice.currency}
-                </dd>
-              </div>
-              <div>
-                <dt>eBay est. price</dt>
-                <dd>{listing.ebayMedianPrice.toFixed(2)}</dd>
-              </div>
-              <div>
-                <dt>Net profit</dt>
-                <dd>{listing.netProfit.toFixed(2)}</dd>
-              </div>
-              <div>
-                <dt>Margin</dt>
-                <dd>{listing.marginPercent.toFixed(1)}%</dd>
-              </div>
-            </dl>
-            <button
-              type="button"
-              onClick={() => handleMarkAsOrdered(listing.vintedId)}
-              disabled={orderingId === listing.vintedId}
-            >
-              {orderingId === listing.vintedId ? 'Marking…' : 'Mark as Ordered'}
-            </button>
-            <button type="button" onClick={() => setDetailListing(listing)}>
-              View details
-            </button>
-            {orderErrors[listing.vintedId] && (
-              <p className="error" role="alert">
-                {orderErrors[listing.vintedId]}
-              </p>
-            )}
-          </li>
-        ))}
+            </li>
+          )
+        })}
       </ul>
 
       {detailListing && (
