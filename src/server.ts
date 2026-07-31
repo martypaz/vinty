@@ -79,9 +79,13 @@ export function createApp(db: Database.Database) {
     const status = req.query.status;
     const rows =
       typeof status === "string"
-        ? (db
-            .prepare("SELECT * FROM listings WHERE status = ? ORDER BY created_at DESC")
-            .all(status) as ListingRow[])
+        ? status === "listed_on_ebay"
+          ? (db
+              .prepare("SELECT * FROM listings WHERE status = ? ORDER BY listed_at DESC")
+              .all(status) as ListingRow[])
+          : (db
+              .prepare("SELECT * FROM listings WHERE status = ? ORDER BY created_at DESC")
+              .all(status) as ListingRow[])
         : (db.prepare("SELECT * FROM listings ORDER BY created_at DESC").all() as ListingRow[]);
 
     res.json(rows.map(toApiListing));

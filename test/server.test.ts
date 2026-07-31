@@ -16,6 +16,7 @@ interface SeedOverrides {
   status?: string;
   title?: string;
   createdAt?: string;
+  listedAt?: string;
 }
 
 function seedListing(db: Database.Database, overrides: SeedOverrides = {}): number {
@@ -26,8 +27,8 @@ function seedListing(db: Database.Database, overrides: SeedOverrides = {}): numb
       vinted_id, title, brand, condition, vinted_price_amount, vinted_price_currency,
       size, vinted_url, photos, ebay_median_price, ebay_median_shipping_price,
       ebay_comparable_count, vinted_cost_basis, postage_cost, ebay_fees,
-      net_profit, margin_percent, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      net_profit, margin_percent, status, created_at, updated_at, listed_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     vintedId,
     overrides.title ?? "Barbour Puffer coat",
@@ -48,7 +49,8 @@ function seedListing(db: Database.Database, overrides: SeedOverrides = {}): numb
     62.67,
     overrides.status ?? "new",
     createdAt,
-    createdAt
+    createdAt,
+    overrides.listedAt ?? null
   );
   return vintedId;
 }
@@ -86,6 +88,46 @@ describe("GET /api/listings", () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
     expect(res.body[0].vintedId).toBe(2);
+  });
+
+  it("orders status=listed_on_ebay results by listed_at descending (AC-2)", async () => {
+    const db = makeTestDb();
+    seedListing(db, {
+      vintedId: 1,
+      status: "listed_on_ebay",
+      createdAt: "2026-02-01T00:00:00.000Z",
+      listedAt: "2026-02-05T00:00:00.000Z",
+    });
+    seedListing(db, {
+      vintedId: 2,
+      status: "listed_on_ebay",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      listedAt: "2026-03-10T00:00:00.000Z",
+    });
+    const app = createApp(db);
+
+    const res = await request(app).get("/api/listings?status=listed_on_ebay");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(2);
+    // vintedId 2 has an earlier createdAt but a later listedAt, so it must come first
+    expect(res.body[0].vintedId).toBe(2);
+    expect(res.body[1].vintedId).toBe(1);
+  });
+
+  it("keeps created_at descending order for other statuses and no filter (AC-2 regression)", async () => {
+    const db = makeTestDb();
+    seedListing(db, { vintedId: 1, status: "ordered", createdAt: "2026-01-01T00:00:00.000Z" });
+    seedListing(db, { vintedId: 2, status: "ordered", createdAt: "2026-02-01T00:00:00.000Z" });
+    const app = createApp(db);
+
+    const orderedRes = await request(app).get("/api/listings?status=ordered");
+    expect(orderedRes.body[0].vintedId).toBe(2);
+    expect(orderedRes.body[1].vintedId).toBe(1);
+
+    const allRes = await request(app).get("/api/listings");
+    expect(allRes.body[0].vintedId).toBe(2);
+    expect(allRes.body[1].vintedId).toBe(1);
   });
 });
 
