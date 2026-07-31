@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 import { NewListings } from './NewListings'
+import { Ordered } from './Ordered'
 
 const TABS = ['New Listings', 'Ordered', 'eBay Listings'] as const
 type Tab = (typeof TABS)[number]
@@ -31,7 +32,7 @@ function App() {
       </header>
       <main className="app-main">
         {activeTab === 'New Listings' && <NewListings />}
-        {activeTab === 'Ordered' && <ComingSoon />}
+        {activeTab === 'Ordered' && <Ordered />}
         {activeTab === 'eBay Listings' && <ComingSoon />}
       </main>
     </div>

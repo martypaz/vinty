@@ -71,3 +71,20 @@ export async function markAsOrdered(vintedId: number): Promise<Listing> {
   }
   return (await res.json()) as Listing
 }
+
+export async function submitEbayListing(
+  vintedId: number,
+  details: EbayListingDetails
+): Promise<Listing> {
+  const res = await fetch(new URL(`/api/listings/${vintedId}/ebay-listing`, API_BASE_URL), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(details),
+  })
+  if (!res.ok) {
+    throw new Error(
+      await parseErrorMessage(res, `Failed to record eBay listing for ${vintedId} (${res.status})`)
+    )
+  }
+  return (await res.json()) as Listing
+}
