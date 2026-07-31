@@ -57,14 +57,15 @@ describe('EbayListings', () => {
     expect(vintedLink).toHaveAttribute('href', listing.vintedUrl)
     expect(vintedLink).toHaveAttribute('target', '_blank')
 
-    expect(screen.getByText('2026-07-29')).toBeInTheDocument()
     expect(screen.getByText('65.00')).toBeInTheDocument()
     expect(screen.getByText('18.50 GBP')).toBeInTheDocument()
     expect(screen.getByText('34.90')).toBeInTheDocument()
     expect(screen.getByText('58.2%')).toBeInTheDocument()
-    expect(screen.getByText(listing.brand)).toBeInTheDocument()
-    expect(screen.getByText(listing.condition)).toBeInTheDocument()
-    expect(screen.getByText(listing.size)).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        `${listing.brand} · ${listing.condition} · Size ${listing.size} · Listed 2026-07-29`
+      )
+    ).toBeInTheDocument()
   })
 
   it('shows an empty state for an empty array', async () => {
@@ -95,7 +96,6 @@ describe('EbayListings', () => {
     const detailsButton = await screen.findByRole('button', { name: 'View details' })
     fireEvent.click(detailsButton)
 
-    expect(await screen.findByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: listing.title })).toBeInTheDocument()
+    expect(await screen.findByRole('dialog', { name: listing.title })).toBeInTheDocument()
   })
 })

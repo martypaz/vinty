@@ -48,9 +48,9 @@ describe('NewListings', () => {
     const titleLink = await screen.findByRole('link', { name: listing.title })
     expect(titleLink).toHaveAttribute('href', listing.vintedUrl)
     expect(titleLink).toHaveAttribute('target', '_blank')
-    expect(screen.getByText(listing.brand)).toBeInTheDocument()
-    expect(screen.getByText(listing.condition)).toBeInTheDocument()
-    expect(screen.getByText(listing.size)).toBeInTheDocument()
+    expect(
+      screen.getByText(`${listing.brand} · ${listing.condition} · Size ${listing.size}`)
+    ).toBeInTheDocument()
     expect(screen.getByText('20.00 GBP')).toBeInTheDocument()
     expect(screen.getByText('55.00')).toBeInTheDocument()
     expect(screen.getByText('28.10')).toBeInTheDocument()
@@ -106,7 +106,6 @@ describe('NewListings', () => {
     const detailsButton = await screen.findByRole('button', { name: 'View details' })
     fireEvent.click(detailsButton)
 
-    expect(await screen.findByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: listing.title })).toBeInTheDocument()
+    expect(await screen.findByRole('dialog', { name: listing.title })).toBeInTheDocument()
   })
 })
