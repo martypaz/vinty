@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 
 import type Database from "better-sqlite3";
 
-import { openDb, upsertListing } from "./db.js";
+import { openDb, recordPriceSnapshot, upsertListing } from "./db.js";
 import type { EvaluatedCandidateItem, NotifiedCandidateItem, SlackNotificationResult } from "./types.js";
 
 export const DEFAULT_CHANNEL = "#approvals";
@@ -114,7 +114,10 @@ export async function notifyCandidates(
 
     let dbError: string | null = null;
     try {
-      upsertListing(db, candidate);
+      db.transaction(() => {
+        upsertListing(db, candidate);
+        recordPriceSnapshot(db, candidate);
+      })();
     } catch (err) {
       dbError = err instanceof Error ? err.message : "Unknown database error";
     }

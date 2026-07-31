@@ -44,7 +44,7 @@ export interface SoldCompsRawItem {
   soldPrice: string;
   soldCurrency: string;
   shippingPrice: string;
-  shippingCurrency: string;
+  shippingCurrency: string | null;
   url: string;
 }
 
@@ -63,8 +63,19 @@ export interface EbayPriceEstimate {
   reason: null | "capped" | "insufficient_comps";
 }
 
+export interface SoldComp {
+  itemId: string;
+  title: string;
+  soldPrice: number;
+  soldCurrency: string;
+  shippingPrice: number;
+  shippingCurrency: string | null;
+  url: string;
+}
+
 export interface EnrichedCandidateItem extends CandidateItem {
   ebayPriceEstimate: EbayPriceEstimate;
+  soldComps: SoldComp[];
 }
 
 export interface ProfitEvaluation {

@@ -4,6 +4,8 @@ import type {
   CandidateItem,
   EbayPriceEstimate,
   EnrichedCandidateItem,
+  SoldComp,
+  SoldCompsRawItem,
   SoldCompsResponse,
 } from "./types.js";
 
@@ -93,6 +95,20 @@ function estimateFromComps(response: SoldCompsResponse): EbayPriceEstimate {
   };
 }
 
+function toSoldComps(items: SoldCompsRawItem[]): SoldComp[] {
+  return items
+    .map((item) => ({
+      itemId: item.itemId,
+      title: item.title,
+      soldPrice: Number(item.soldPrice),
+      soldCurrency: item.soldCurrency,
+      shippingPrice: Number(item.shippingPrice),
+      shippingCurrency: item.shippingCurrency,
+      url: item.url,
+    }))
+    .filter((comp) => Number.isFinite(comp.soldPrice));
+}
+
 function cappedEstimate(): EbayPriceEstimate {
   return {
     available: false,
@@ -116,7 +132,7 @@ export async function enrichCandidates(
   for (let i = 0; i < candidates.length; i++) {
     const candidate = candidates[i];
     if (i >= LOOKUP_CAP) {
-      enriched.push({ ...candidate, ebayPriceEstimate: cappedEstimate() });
+      enriched.push({ ...candidate, ebayPriceEstimate: cappedEstimate(), soldComps: [] });
       continue;
     }
 
@@ -130,7 +146,11 @@ export async function enrichCandidates(
         `Failed while looking up candidate ${candidate.id} ("${candidate.title}"): ${message}`
       );
     }
-    enriched.push({ ...candidate, ebayPriceEstimate: estimateFromComps(response) });
+    enriched.push({
+      ...candidate,
+      ebayPriceEstimate: estimateFromComps(response),
+      soldComps: toSoldComps(response.items),
+    });
   }
   return enriched;
 }

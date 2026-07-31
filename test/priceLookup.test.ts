@@ -74,6 +74,109 @@ describe("enrichCandidates", () => {
     });
   });
 
+  it("attaches the raw comps that fed the median (MAR-14 AC-1)", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse(loadFixture("soldcomps-response.json")));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const [result] = await enrichCandidates([makeCandidate()], "sc_test_key");
+
+    expect(result.soldComps).toEqual([
+      {
+        itemId: "1",
+        title: "Barbour Liddesdale coat",
+        soldPrice: 70,
+        soldCurrency: "GBP",
+        shippingPrice: 8,
+        shippingCurrency: "GBP",
+        url: "https://www.ebay.co.uk/itm/1",
+      },
+      {
+        itemId: "2",
+        title: "Barbour wax coat",
+        soldPrice: 80,
+        soldCurrency: "GBP",
+        shippingPrice: 10,
+        shippingCurrency: "GBP",
+        url: "https://www.ebay.co.uk/itm/2",
+      },
+      {
+        itemId: "3",
+        title: "Barbour quilted coat",
+        soldPrice: 60,
+        soldCurrency: "GBP",
+        shippingPrice: 12,
+        shippingCurrency: "GBP",
+        url: "https://www.ebay.co.uk/itm/3",
+      },
+      {
+        itemId: "4",
+        title: "Barbour classic coat",
+        soldPrice: 90,
+        soldCurrency: "GBP",
+        shippingPrice: 14,
+        shippingCurrency: "GBP",
+        url: "https://www.ebay.co.uk/itm/4",
+      },
+    ]);
+  });
+
+  it("still attaches raw comps when there are too few for a reliable median (MAR-14 AC-1)", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse(loadFixture("soldcomps-response-thin.json")));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const [result] = await enrichCandidates([makeCandidate()], "sc_test_key");
+
+    expect(result.ebayPriceEstimate.available).toBe(false);
+    expect(result.soldComps).toHaveLength(2);
+    expect(result.soldComps[0].itemId).toBe("10");
+  });
+
+  it("keeps a null shippingCurrency as-is for free-shipping comps (MAR-14 AC-1 regression)", async () => {
+    const fetchMock = vi.fn(async () =>
+      jsonResponse(
+        JSON.stringify({
+          keyword: "Barbour coat",
+          totalItems: 3,
+          items: [
+            {
+              itemId: "1",
+              title: "Barbour coat A",
+              soldPrice: "70.00",
+              soldCurrency: "GBP",
+              shippingPrice: "0",
+              shippingCurrency: null,
+              url: "https://www.ebay.co.uk/itm/1",
+            },
+            {
+              itemId: "2",
+              title: "Barbour coat B",
+              soldPrice: "80.00",
+              soldCurrency: "GBP",
+              shippingPrice: "10.00",
+              shippingCurrency: "GBP",
+              url: "https://www.ebay.co.uk/itm/2",
+            },
+            {
+              itemId: "3",
+              title: "Barbour coat C",
+              soldPrice: "60.00",
+              soldCurrency: "GBP",
+              shippingPrice: "12.00",
+              shippingCurrency: "GBP",
+              url: "https://www.ebay.co.uk/itm/3",
+            },
+          ],
+        })
+      )
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const [result] = await enrichCandidates([makeCandidate()], "sc_test_key");
+
+    expect(result.soldComps[0].shippingCurrency).toBeNull();
+    expect(result.soldComps[0].shippingPrice).toBe(0);
+  });
+
   it("flags insufficient_comps when zero comps are found", async () => {
     const fetchMock = vi.fn(async () =>
       jsonResponse(JSON.stringify({ keyword: "x", totalItems: 0, items: [] }))
@@ -104,6 +207,7 @@ describe("enrichCandidates", () => {
     const cappedOnes = results.slice(LOOKUP_CAP);
     expect(cappedOnes.every((r) => r.ebayPriceEstimate.reason === "capped")).toBe(true);
     expect(cappedOnes.every((r) => r.ebayPriceEstimate.available === false)).toBe(true);
+    expect(cappedOnes.every((r) => r.soldComps.length === 0)).toBe(true);
   });
 
   it("throws SoldCompsConfigError and makes no API calls when no key is provided (AC-5)", async () => {

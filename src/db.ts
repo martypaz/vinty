@@ -3,7 +3,7 @@ import path from "node:path";
 
 import Database from "better-sqlite3";
 
-import type { EvaluatedCandidateItem } from "./types.js";
+import type { EvaluatedCandidateItem, SoldComp } from "./types.js";
 
 const DEFAULT_DB_PATH = "data/vinty.sqlite3";
 
@@ -53,6 +53,34 @@ export function initSchema(db: Database.Database): void {
       db.exec(`ALTER TABLE listings ADD COLUMN ${name} ${type}`);
     }
   }
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS price_snapshots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      vinted_id INTEGER NOT NULL REFERENCES listings(vinted_id),
+      recorded_at TEXT NOT NULL,
+      ebay_median_price REAL NOT NULL,
+      ebay_median_shipping_price REAL NOT NULL,
+      ebay_comparable_count INTEGER NOT NULL,
+      ebay_currency TEXT NOT NULL,
+      net_profit REAL NOT NULL,
+      margin_percent REAL NOT NULL
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS price_snapshot_comps (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      snapshot_id INTEGER NOT NULL REFERENCES price_snapshots(id),
+      item_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      sold_price REAL NOT NULL,
+      sold_currency TEXT NOT NULL,
+      shipping_price REAL NOT NULL,
+      shipping_currency TEXT,
+      url TEXT NOT NULL
+    )
+  `);
 }
 
 export function openDb(dbPath: string = process.env.VINTY_DB_PATH ?? DEFAULT_DB_PATH): Database.Database {
@@ -134,6 +162,53 @@ export function upsertListing(db: Database.Database, candidate: EvaluatedCandida
   } catch (err) {
     throw new ListingSaveError(
       `Could not save listing ${id} to database: ${(err as Error).message}`
+    );
+  }
+}
+
+export function recordPriceSnapshot(db: Database.Database, candidate: EvaluatedCandidateItem): void {
+  const { id, ebayPriceEstimate, profitEvaluation, soldComps } = candidate;
+  const now = new Date().toISOString();
+
+  try {
+    const { lastInsertRowid: snapshotId } = db
+      .prepare(
+        `INSERT INTO price_snapshots (
+          vinted_id, recorded_at, ebay_median_price, ebay_median_shipping_price,
+          ebay_comparable_count, ebay_currency, net_profit, margin_percent
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(
+        id,
+        now,
+        ebayPriceEstimate.medianPrice,
+        ebayPriceEstimate.medianShippingPrice,
+        ebayPriceEstimate.comparableCount,
+        ebayPriceEstimate.currency,
+        profitEvaluation.netProfit,
+        profitEvaluation.marginPercent
+      );
+
+    const insertComp = db.prepare(
+      `INSERT INTO price_snapshot_comps (
+        snapshot_id, item_id, title, sold_price, sold_currency, shipping_price, shipping_currency, url
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    for (const comp of soldComps as SoldComp[]) {
+      insertComp.run(
+        snapshotId,
+        comp.itemId,
+        comp.title,
+        comp.soldPrice,
+        comp.soldCurrency,
+        comp.shippingPrice,
+        comp.shippingCurrency,
+        comp.url
+      );
+    }
+  } catch (err) {
+    throw new ListingSaveError(
+      `Could not save price snapshot for listing ${id} to database: ${(err as Error).message}`
     );
   }
 }

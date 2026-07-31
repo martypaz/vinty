@@ -70,6 +70,42 @@ function getListingRow(db: Database.Database, id: number): ListingRow | undefine
   return db.prepare("SELECT * FROM listings WHERE vinted_id = ?").get(id) as ListingRow | undefined;
 }
 
+interface PriceSnapshotRow {
+  id: number;
+  vinted_id: number;
+  recorded_at: string;
+  ebay_median_price: number;
+  ebay_median_shipping_price: number;
+  ebay_comparable_count: number;
+  ebay_currency: string;
+  net_profit: number;
+  margin_percent: number;
+}
+
+interface PriceSnapshotCompRow {
+  id: number;
+  snapshot_id: number;
+  item_id: string;
+  title: string;
+  sold_price: number;
+  sold_currency: string;
+  shipping_price: number;
+  shipping_currency: string | null;
+  url: string;
+}
+
+function toApiComp(row: PriceSnapshotCompRow) {
+  return {
+    itemId: row.item_id,
+    title: row.title,
+    soldPrice: row.sold_price,
+    soldCurrency: row.sold_currency,
+    shippingPrice: row.shipping_price,
+    shippingCurrency: row.shipping_currency,
+    url: row.url,
+  };
+}
+
 export function createApp(db: Database.Database) {
   const app = express();
   app.use(cors());
@@ -89,6 +125,35 @@ export function createApp(db: Database.Database) {
         : (db.prepare("SELECT * FROM listings ORDER BY created_at DESC").all() as ListingRow[]);
 
     res.json(rows.map(toApiListing));
+  });
+
+  app.get("/api/listings/:id/history", (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+    const listingRow = getListingRow(db, id);
+    if (!listingRow) {
+      res.status(404).json({ error: `Listing ${id} not found` });
+      return;
+    }
+
+    const snapshots = db
+      .prepare("SELECT * FROM price_snapshots WHERE vinted_id = ? ORDER BY recorded_at ASC")
+      .all(id) as PriceSnapshotRow[];
+    const compsStatement = db.prepare(
+      "SELECT * FROM price_snapshot_comps WHERE snapshot_id = ? ORDER BY id ASC"
+    );
+
+    res.json(
+      snapshots.map((snapshot) => ({
+        recordedAt: snapshot.recorded_at,
+        ebayMedianPrice: snapshot.ebay_median_price,
+        ebayMedianShippingPrice: snapshot.ebay_median_shipping_price,
+        ebayComparableCount: snapshot.ebay_comparable_count,
+        ebayCurrency: snapshot.ebay_currency,
+        netProfit: snapshot.net_profit,
+        marginPercent: snapshot.margin_percent,
+        comps: (compsStatement.all(snapshot.id) as PriceSnapshotCompRow[]).map(toApiComp),
+      }))
+    );
   });
 
   app.patch("/api/listings/:id/order", (req: Request, res: Response) => {

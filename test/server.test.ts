@@ -55,6 +55,45 @@ function seedListing(db: Database.Database, overrides: SeedOverrides = {}): numb
   return vintedId;
 }
 
+interface SnapshotOverrides {
+  recordedAt?: string;
+  ebayMedianPrice?: number;
+  comps?: Array<{ itemId: string; title: string; soldPrice: number; url: string }>;
+}
+
+function seedSnapshot(db: Database.Database, vintedId: number, overrides: SnapshotOverrides = {}): number {
+  const { lastInsertRowid } = db
+    .prepare(
+      `INSERT INTO price_snapshots (
+        vinted_id, recorded_at, ebay_median_price, ebay_median_shipping_price,
+        ebay_comparable_count, ebay_currency, net_profit, margin_percent
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      vintedId,
+      overrides.recordedAt ?? new Date().toISOString(),
+      overrides.ebayMedianPrice ?? 75,
+      11,
+      4,
+      "GBP",
+      47,
+      62.67
+    );
+  const snapshotId = lastInsertRowid as number;
+
+  const comps = overrides.comps ?? [
+    { itemId: "1", title: "Barbour coat sold", soldPrice: 70, url: "https://www.ebay.co.uk/itm/1" },
+  ];
+  for (const comp of comps) {
+    db.prepare(
+      `INSERT INTO price_snapshot_comps (
+        snapshot_id, item_id, title, sold_price, sold_currency, shipping_price, shipping_currency, url
+      ) VALUES (?, ?, ?, ?, 'GBP', 8, 'GBP', ?)`
+    ).run(snapshotId, comp.itemId, comp.title, comp.soldPrice, comp.url);
+  }
+  return snapshotId;
+}
+
 describe("GET /api/listings", () => {
   it("returns all listings, camelCase-mapped, newest first (AC-3)", async () => {
     const db = makeTestDb();
@@ -246,5 +285,63 @@ describe("PATCH /api/listings/:id/ebay-listing", () => {
       .send({ title: "x", price: 10 });
 
     expect(res.status).toBe(400);
+  });
+});
+
+describe("GET /api/listings/:id/history", () => {
+  it("returns snapshots oldest-first with nested comps, camelCase-mapped (MAR-14 AC-5)", async () => {
+    const db = makeTestDb();
+    const id = seedListing(db);
+    seedSnapshot(db, id, {
+      recordedAt: "2026-07-20T00:00:00.000Z",
+      ebayMedianPrice: 60,
+      comps: [{ itemId: "10", title: "Older comp", soldPrice: 58, url: "https://www.ebay.co.uk/itm/10" }],
+    });
+    seedSnapshot(db, id, {
+      recordedAt: "2026-07-30T00:00:00.000Z",
+      ebayMedianPrice: 68,
+      comps: [{ itemId: "20", title: "Newer comp", soldPrice: 68, url: "https://www.ebay.co.uk/itm/20" }],
+    });
+    const app = createApp(db);
+
+    const res = await request(app).get(`/api/listings/${id}/history`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(2);
+    expect(res.body[0].recordedAt).toBe("2026-07-20T00:00:00.000Z"); // oldest first
+    expect(res.body[0].ebayMedianPrice).toBe(60);
+    expect(res.body[1].recordedAt).toBe("2026-07-30T00:00:00.000Z");
+    expect(res.body[1].ebayMedianPrice).toBe(68);
+    expect(res.body[0].comps).toEqual([
+      {
+        itemId: "10",
+        title: "Older comp",
+        soldPrice: 58,
+        soldCurrency: "GBP",
+        shippingPrice: 8,
+        shippingCurrency: "GBP",
+        url: "https://www.ebay.co.uk/itm/10",
+      },
+    ]);
+  });
+
+  it("returns an empty array for a listing that exists but has no snapshots yet (MAR-14 AC-5)", async () => {
+    const db = makeTestDb();
+    const id = seedListing(db);
+    const app = createApp(db);
+
+    const res = await request(app).get(`/api/listings/${id}/history`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it("returns 404 for an unknown id (MAR-14 AC-5)", async () => {
+    const db = makeTestDb();
+    const app = createApp(db);
+
+    const res = await request(app).get("/api/listings/999/history");
+
+    expect(res.status).toBe(404);
   });
 });
