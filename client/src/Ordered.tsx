@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { fetchListings, submitEbayListing, type Listing } from './api'
+import { ListingDetailModal } from './ListingDetailModal'
 
 interface ModalState {
   vintedId: number
@@ -38,6 +39,7 @@ export function Ordered() {
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({})
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [detailListing, setDetailListing] = useState<Listing | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -174,9 +176,16 @@ export function Ordered() {
             <button type="button" onClick={() => openModal(listing)}>
               List on eBay
             </button>
+            <button type="button" onClick={() => setDetailListing(listing)}>
+              View details
+            </button>
           </li>
         ))}
       </ul>
+
+      {detailListing && (
+        <ListingDetailModal listing={detailListing} onClose={() => setDetailListing(null)} />
+      )}
 
       {modal && (
         <div className="modal-overlay">
